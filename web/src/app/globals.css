@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #09090b;
+  color: #fafafa;
+}
+
+/* WalletConnect button styling */
+appkit-button {
+  --w3m-accent: #3b82f6;
+}
