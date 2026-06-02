@@ -70,21 +70,56 @@ function Skeleton() {
 }
 
 /* ── ticker (smart money movements) ────────────────────────────────── */
-const TICKER_ITEMS = [
-  "USDC (Aave) +0.12%  •  cbETH (Fusion) +1.84%  •  USDC (Morpho) +0.31%",
-  "WETH (Aave) +0.08%  •  USDC (Moonwell) -0.05%  •  cbBTC (Compound) +0.22%",
-  "USDC (Fluid) +0.19%  •  ETH (Euler) +0.41%  •  USDC (Seamless) +0.07%",
-];
+function Ticker({ pools }: { pools: Pool[] }) {
+  const [mounted, setMounted] = useState(false);
 
-function Ticker() {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Generate ticker items from actual pool data, update with fresh data
+  const tickerItems = useMemo(() => {
+    if (!pools.length) return [];
+    const sorted = [...pools].sort((a, b) => b.apy - a.apy);
+    const items: string[] = [];
+    // Top movers - positive changes
+    const gainers = sorted.filter(p => p.apyPct7D > 0.5).slice(0, 3);
+    if (gainers.length) {
+      items.push(gainers.map(p => `${p.symbol} (${p.project}) +${p.apyPct7D.toFixed(2)}%`).join("  •  "));
+    }
+    // Top yields
+    const topYields = sorted.slice(0, 3);
+    items.push(topYields.map(p => `${p.symbol} (${p.project}) ${p.apy.toFixed(1)}% APY`).join("  •  "));
+    // Stablecoin highlights
+    const stables = sorted.filter(p => p.stablecoin && p.apy > 3).slice(0, 3);
+    if (stables.length) {
+      items.push(stables.map(p => `${p.symbol} (${p.project}) ${p.apy.toFixed(1)}%`).join("  •  "));
+    }
+    return items.length ? items : ["Granary — Base DeFi Yield Terminal"];
+  }, [pools]);
+
+  const content = tickerItems.join("  •  ");
+
+  if (!mounted) return (
+    <div style={{
+      overflow: "hidden", whiteSpace: "nowrap",
+      background: "var(--surface-raised)", borderBottom: "1px solid var(--border)",
+      fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", letterSpacing: "0.02em", height: 32, display: "flex", alignItems: "center",
+    }} />
+  );
+
   return (
     <div style={{
       overflow: "hidden", whiteSpace: "nowrap",
       background: "var(--surface-raised)", borderBottom: "1px solid var(--border)",
-      fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", letterSpacing: "0.02em",
+      fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", letterSpacing: "0.02em", height: 32, display: "flex", alignItems: "center",
     }}>
-      <div style={{ display: "inline-block", paddingLeft: "100%", animation: "ticker 25s linear infinite" }}>
-        {TICKER_ITEMS.map((t, i) => <span key={i} style={{ paddingRight: 80 }}>{t}</span>)}
+      <div style={{ display: "flex", animation: "ticker 40s linear infinite" }}>
+        {/* Double the content for seamless loop */}
+        <span style={{ paddingRight: 80 }}>{content}  •  </span>
+        <span style={{ paddingRight: 80 }}>{content}  •  </span>
+        <span style={{ paddingRight: 80 }}>{content}  •  </span>
+        <span style={{ paddingRight: 80 }}>{content}  •  </span>
       </div>
       <style>{`@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
     </div>
@@ -116,7 +151,7 @@ export default function Home() {
     return pools.filter(p => {
       if (!showRisky) {
         if (p.tvlUsd < 100_000) return false;
-        if ((p.apy || 0) > 500) return false;
+        if ((p.apy || 0) > 20) return false; // Filter APY > 20% as risky
       }
       if (search && !p.symbol.toUpperCase().includes(search.toUpperCase())) return false;
       if (cat && p.category !== cat) return false;
@@ -136,9 +171,9 @@ export default function Home() {
       {/* ── NAV ────────────────────────────────────────────────────── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(250,250,250,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <img src="https://github.com/babylonagent/granary/raw/main/logo.png" alt="" width={40} height={40} style={{ objectFit: "contain" }} />
-            <span style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 18, color: "var(--fg)", letterSpacing: "-0.01em" }}>Granary</span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 24, color: "var(--fg)", letterSpacing: "-0.02em" }}>GRANARY</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--meta)", letterSpacing: "0.04em", textTransform: "uppercase" }}>powered by babylon agent</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             {isConnected && address && <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--muted)", letterSpacing: "0.02em" }}>{address.slice(0, 6)}…{address.slice(-4)}</span>}
@@ -148,7 +183,7 @@ export default function Home() {
       </nav>
 
       {/* ── TICKER ─────────────────────────────────────────────────── */}
-      <Ticker />
+      <Ticker pools={pools} />
 
       {/* ── STATS ──────────────────────────────────────────────────── */}
       <section style={{ maxWidth: 1120, margin: "0 auto", padding: "32px 24px 0" }}>
@@ -177,16 +212,44 @@ export default function Home() {
             />
           </div>
 
-          {/* category */}
-          <select value={cat} onChange={e => setCat(e.target.value)} style={{ padding: "8px 12px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", color: "var(--fg)", fontSize: 14, fontFamily: "var(--font-body)", cursor: "pointer" }}>
+          {/* category — styled */}
+          <select value={cat} onChange={e => setCat(e.target.value)} style={{ 
+            padding: "8px 32px 8px 12px", 
+            border: "1px solid var(--border)", 
+            borderRadius: "var(--radius-sm)", 
+            background: "var(--surface)", 
+            color: "var(--fg)", 
+            fontSize: 14, 
+            fontFamily: "var(--font-body)", 
+            cursor: "pointer",
+            appearance: "none",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b6b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 10px center",
+            backgroundSize: "12px"
+          }}>
             <option value="">All types</option>
             <option value="lending">Lending</option>
             <option value="yield">Yield vaults</option>
             <option value="lp">Liquidity pools</option>
           </select>
 
-          {/* min tvl */}
-          <select value={minTvl} onChange={e => setMinTvl(Number(e.target.value))} style={{ padding: "8px 12px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", color: "var(--fg)", fontSize: 14, fontFamily: "var(--font-body)", cursor: "pointer" }}>
+          {/* min tvl — styled */}
+          <select value={minTvl} onChange={e => setMinTvl(Number(e.target.value))} style={{ 
+            padding: "8px 32px 8px 12px", 
+            border: "1px solid var(--border)", 
+            borderRadius: "var(--radius-sm)", 
+            background: "var(--surface)", 
+            color: "var(--fg)", 
+            fontSize: 14, 
+            fontFamily: "var(--font-body)", 
+            cursor: "pointer",
+            appearance: "none",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b6b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 10px center",
+            backgroundSize: "12px"
+          }}>
             <option value={0}>Any TVL</option>
             <option value={10}>$10K+</option>
             <option value={50}>$50K+</option>
@@ -195,10 +258,33 @@ export default function Home() {
             <option value={1000}>$1M+</option>
           </select>
 
-          {/* SAFE MODE TOGGLE */}
-          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--fg)", cursor: "pointer", userSelect: "none" }}>
-            <input type="checkbox" checked={!showRisky} onChange={e => setShowRisky(!e.target.checked)} style={{ accentColor: "var(--accent)" }} />
-            <span>Safe mode (hide micro-pools &amp; &gt;500% APY)</span>
+          {/* SAFE MODE TOGGLE — styled */}
+          <label style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 10, 
+            fontSize: 13, 
+            color: "var(--fg)", 
+            cursor: "pointer", 
+            userSelect: "none",
+            padding: "8px 12px",
+            background: "var(--surface-raised)",
+            borderRadius: "var(--radius-sm)",
+            border: "1px solid var(--border)",
+            transition: "all var(--motion-fast) var(--ease)"
+          }}>
+            <input 
+              type="checkbox" 
+              checked={!showRisky} 
+              onChange={e => setShowRisky(!e.target.checked)} 
+              style={{ 
+                accentColor: "var(--accent)",
+                width: 16,
+                height: 16,
+                cursor: "pointer"
+              }} 
+            />
+            <span>Safe mode</span>
           </label>
 
           <span style={{ marginLeft: "auto", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--meta)", letterSpacing: "0.02em" }}>
