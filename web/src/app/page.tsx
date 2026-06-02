@@ -114,12 +114,14 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold text-sm">
-            YB
-          </div>
+          <img 
+            src="https://github.com/babylonagent/granary/raw/main/logo.png" 
+            alt="Granary" 
+            className="w-10 h-10 object-contain"
+          />
           <div>
             <h1 className="font-bold text-lg">Granary</h1>
-            <p className="text-xs text-zinc-500">Base L2 DeFi Yield Terminal</p>
+            <p className="text-xs text-zinc-500">Base DeFi Yield Terminal</p>
           </div>
         </div>
         <WalletButton />
