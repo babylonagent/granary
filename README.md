@@ -1,6 +1,12 @@
-# Granary — Base DeFi Yield Terminal
+<p align="center">
+  <img src="https://github.com/babylonagent/granary/raw/main/logo.png" width="180" alt="Granary Logo">
+</p>
 
-**One endpoint. Every Base protocol. The best yield, instantly.**
+<h1 align="center">Granary</h1>
+
+<p align="center"><strong>Base DeFi Yield Terminal</strong></p>
+
+<p align="center">One endpoint. Every Base protocol. The best yield, instantly.</p>
 
 Granary aggregates yield opportunities across all major Base L2 protocols — Aave, Morpho, Moonwell, Aerodrome, Compound, Beefy, Uniswap, and 20+ more — through the DefiLlama Yields API. No per-protocol fragility. One query gives you the entire Base yield landscape.
 
