@@ -118,7 +118,7 @@ export default function Home() {
             YB
           </div>
           <div>
-            <h1 className="font-bold text-lg">YieldBase</h1>
+            <h1 className="font-bold text-lg">Granary</h1>
             <p className="text-xs text-zinc-500">Base L2 DeFi Yield Terminal</p>
           </div>
         </div>

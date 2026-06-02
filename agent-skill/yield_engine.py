@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YieldBase — DeFi yield aggregator for Base L2.
+Granary — DeFi yield aggregator for Base L2.
 
 Primary data source: DefiLlama Yields API (yields.llama.fi/pools)
 Covers: Aave v3, Morpho Blue, Aerodrome, Moonwell, Compound v3,
@@ -113,7 +113,7 @@ def format_row(pool: dict) -> str:
 
 
 def cli():
-    parser = argparse.ArgumentParser(description="YieldBase — Base DeFi yield aggregator")
+    parser = argparse.ArgumentParser(description="Granary — Base DeFi yield aggregator")
     parser.add_argument("--token", help="Filter by token symbol (e.g., USDC, ETH)")
     parser.add_argument("--type", dest="category", choices=["lending", "lp", "yield"],
                         help="Category filter")
@@ -144,7 +144,7 @@ def cli():
         return
 
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    print(f"═══ YieldBase · Base L2 · {ts} ═══")
+    print(f"═══ Granary · Base L2 · {ts} ═══")
     if args.token:
         print(f"  → Best {args.token} yields on Base\n")
     else:

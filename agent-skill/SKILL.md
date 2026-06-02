@@ -1,11 +1,11 @@
 ---
-title: "YieldBase — Base DeFi Yield Aggregator"
+title: "Granary — Base DeFi Yield Aggregator"
 description: "Find the best yield opportunities on Base L2 across Aave, Morpho, Aerodrome, Moonwell, Compound, Beefy, and 20+ more protocols. Single-source aggregator via DefiLlama."
-name: yieldbase
+name: granary
 version: 0.1.0
 ---
 
-# YieldBase — Base DeFi Yield Aggregator
+# Granary — Base DeFi Yield Aggregator
 
 Single-command yield discovery for Base L2. Queries **all** major Base protocols (Aave v3, Morpho Blue, Moonwell, Aerodrome, Compound v3, Beefy, Uniswap, Fluid, Euler, Harvest, and 15+ more) through the DefiLlama Yields API — one endpoint, no per-protocol fragility.
 
@@ -49,11 +49,6 @@ python3 {SKILL_DIR}/yield_engine.py --token ETH --best 10
 **JSON output for programmatic use:**
 ```bash
 python3 {SKILL_DIR}/yield_engine.py --token USDC --best 10 --json
-```
-
-**Monitor a specific protocol:**
-```bash
-python3 {SKILL_DIR}/yield_engine.py --project aave-v3 --best 20
 ```
 
 ### Interpreting results

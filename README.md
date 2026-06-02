@@ -1,8 +1,8 @@
-# YieldBase — Base DeFi Yield Terminal
+# Granary — Base DeFi Yield Terminal
 
 **One endpoint. Every Base protocol. The best yield, instantly.**
 
-YieldBase aggregates yield opportunities across all major Base L2 protocols — Aave, Morpho, Moonwell, Aerodrome, Compound, Beefy, Uniswap, and 20+ more — through the DefiLlama Yields API. No per-protocol fragility. One query gives you the entire Base yield landscape.
+Granary aggregates yield opportunities across all major Base L2 protocols — Aave, Morpho, Moonwell, Aerodrome, Compound, Beefy, Uniswap, and 20+ more — through the DefiLlama Yields API. No per-protocol fragility. One query gives you the entire Base yield landscape.
 
 ## 🚀 Quick Start
 
@@ -18,7 +18,7 @@ Opens at `http://localhost:3000` — connect your wallet (WalletConnect), browse
 ### Agent Skill (Hermes)
 ```bash
 # Install the skill
-cp -r agent-skill/* ~/.hermes/skills/yieldbase/
+cp -r agent-skill/* ~/.hermes/skills/granary/
 
 # Use it directly
 python3 yield_engine.py --token USDC --type lending --best 5
@@ -51,7 +51,7 @@ python3 agent-skill/yield_engine.py --help
 ## 🏗 Architecture
 
 ```
-yieldbase/
+granary/
 ├── agent-skill/          # Hermes agent skill
 │   ├── SKILL.md          # Agent-facing skill definition
 │   ├── yield_engine.py   # Python yield aggregator

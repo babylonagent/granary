@@ -15,9 +15,9 @@ const config = createConfig({
     walletConnect({
       projectId: PROJECT_ID,
       metadata: {
-        name: "YieldBase",
+        name: "Granary",
         description: "Base DeFi Yield Terminal",
-        url: "https://yieldbase.vercel.app",
+        url: "https://granary.vercel.app",
         icons: [],
       },
     }),

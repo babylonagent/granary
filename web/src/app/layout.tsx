@@ -3,7 +3,7 @@ import { Providers } from "@/components/Providers";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "YieldBase — Base DeFi Yield Terminal",
+  title: "Granary — Base DeFi Yield Terminal",
   description:
     "Find the best yield opportunities on Base L2. Lending, LP, and staking across Aave, Morpho, Aerodrome, Moonwell, Compound, Beefy, and 20+ protocols.",
 };
