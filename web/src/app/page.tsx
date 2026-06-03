@@ -14,10 +14,10 @@ interface Pool {
 
 /* ── formatting ────────────────────────────────────────────────────── */
 function tvl(n: number) {
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
-  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
-  return `$${n.toFixed(0)}`;
+  if (n >= 1e9) return "$" + (n / 1e9).toFixed(1) + "B";
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(1) + "M";
+  if (n >= 1e3) return "$" + (n / 1e3).toFixed(0) + "K";
+  return "$" + n.toFixed(0);
 }
 
 /* ── stat card ─────────────────────────────────────────────────────── */
@@ -37,7 +37,7 @@ function Trend({ value }: { value: number }) {
   const up = value > 0; const down = value < 0;
   const color = up ? "var(--success)" : down ? "var(--danger)" : "var(--meta)";
   const arrow = up ? "↑" : down ? "↓" : "→";
-  return <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color, letterSpacing: "0.02em" }}>{arrow} {Math.abs(value).toFixed(1)}%</span>;
+  return <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color, letterSpacing: "0.02em" }}>{arrow + " " + Math.abs(value).toFixed(1) + "%"}</span>;
 }
 
 /* ── category badge ────────────────────────────────────────────────── */
@@ -64,7 +64,7 @@ function Skeleton() {
           <div style={{ width: 60, height: 18, background: "var(--border-soft)", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite", animationDelay: "0.3s" }} />
         </div>
       ))}
-      <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+      <style>{"@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }"}</style>
     </div>
   );
 }
@@ -77,28 +77,25 @@ function Ticker({ pools }: { pools: Pool[] }) {
     setMounted(true);
   }, []);
 
-  // Generate ticker items from actual pool data, update with fresh data
-  const tickerItems = useMemo(() => {
-    if (!pools.length) return [];
+  // Generate ticker items from actual pool data
+  const tickerContent = useMemo(() => {
+    if (!pools.length) return "Granary — Base DeFi Yield Terminal";
     const sorted = [...pools].sort((a, b) => b.apy - a.apy);
     const items: string[] = [];
     // Top movers - positive changes
     const gainers = sorted.filter(p => p.apyPct7D > 0.5).slice(0, 3);
     if (gainers.length) {
-      items.push(gainers.map(p => `${p.symbol} (${p.project}) +${p.apyPct7D.toFixed(2)}%`).join("  •  "));
+      items.push(...gainers.map(p => p.symbol + " (" + p.project + ") +" + p.apyPct7D.toFixed(2) + "%"));
     }
     // Top yields
-    const topYields = sorted.slice(0, 3);
-    items.push(topYields.map(p => `${p.symbol} (${p.project}) ${p.apy.toFixed(1)}% APY`).join("  •  "));
+    items.push(...sorted.slice(0, 3).map(p => p.symbol + " (" + p.project + ") " + p.apy.toFixed(1) + "% APY"));
     // Stablecoin highlights
     const stables = sorted.filter(p => p.stablecoin && p.apy > 3).slice(0, 3);
     if (stables.length) {
-      items.push(stables.map(p => `${p.symbol} (${p.project}) ${p.apy.toFixed(1)}%`).join("  •  "));
+      items.push(...stables.map(p => p.symbol + " (" + p.project + ") " + p.apy.toFixed(1) + "%"));
     }
-    return items.length ? items : ["Granary — Base DeFi Yield Terminal"];
+    return items.length ? items.join("  •  ") : "Granary — Base DeFi Yield Terminal";
   }, [pools]);
-
-  const content = tickerItems.join("  •  ");
 
   if (!mounted) return (
     <div style={{
@@ -114,14 +111,19 @@ function Ticker({ pools }: { pools: Pool[] }) {
       background: "var(--surface-raised)", borderBottom: "1px solid var(--border)",
       fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", letterSpacing: "0.02em", height: 32, display: "flex", alignItems: "center",
     }}>
-      <div style={{ display: "flex", animation: "ticker 40s linear infinite" }}>
-        {/* Double the content for seamless loop */}
-        <span style={{ paddingRight: 80 }}>{content}  •  </span>
-        <span style={{ paddingRight: 80 }}>{content}  •  </span>
-        <span style={{ paddingRight: 80 }}>{content}  •  </span>
-        <span style={{ paddingRight: 80 }}>{content}  •  </span>
+      <div style={{ display: "flex", animation: "ticker 30s linear infinite" }}>
+        {/* Seamless loop: 4 identical copies for continuous scroll */}
+        <span style={{ paddingRight: 60 }}>{tickerContent}  •  </span>
+        <span style={{ paddingRight: 60 }}>{tickerContent}  •  </span>
+        <span style={{ paddingRight: 60 }}>{tickerContent}  •  </span>
+        <span style={{ paddingRight: 60 }}>{tickerContent}  •  </span>
       </div>
-      <style>{`@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
+      <style>{`
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -135,7 +137,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("");
   const [minTvl, setMinTvl] = useState(50);
-  const [showRisky, setShowRisky] = useState(false); // NEW: safe mode toggle
+  const [showRisky, setShowRisky] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -151,7 +153,7 @@ export default function Home() {
     return pools.filter(p => {
       if (!showRisky) {
         if (p.tvlUsd < 100_000) return false;
-        if ((p.apy || 0) > 20) return false; // Filter APY > 20% as risky
+        if ((p.apy || 0) > 20) return false;
       }
       if (search && !p.symbol.toUpperCase().includes(search.toUpperCase())) return false;
       if (cat && p.category !== cat) return false;
@@ -165,6 +167,15 @@ export default function Home() {
   const totalTvl = pools.reduce((s, p) => s + (p.tvlUsd || 0), 0);
   const protocols = new Set(pools.map(p => p.project)).size;
 
+  // Stats with safe string concatenation
+  const bestYieldValue = loading ? "—" : (topApy ? topApy.apy.toFixed(1) + "%" : "—");
+  const bestYieldDetail = topApy ? topApy.symbol + " · " + topApy.project : "—";
+  const bestStableValue = loading ? "—" : (stableTop ? stableTop.apy.toFixed(1) + "%" : "—");
+  const bestStableDetail = stableTop ? stableTop.symbol + " · " + stableTop.project : "—";
+  const protocolsValue = loading ? "—" : String(protocols);
+  const totalTvlValue = loading ? "—" : tvl(totalTvl);
+  const poolCountDetail = pools.length.toLocaleString() + " pools";
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
 
@@ -172,11 +183,11 @@ export default function Home() {
       <nav style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(250,250,250,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 24, color: "var(--fg)", letterSpacing: "-0.02em" }}>GRANARY</span>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--meta)", letterSpacing: "0.04em", textTransform: "uppercase" }}>powered by babylon agent</span>
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 28, color: "var(--fg)", letterSpacing: "-0.02em" }}>GRANARY</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--meta)", letterSpacing: "0.06em", textTransform: "lowercase" }}>powered by babylon agent</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {isConnected && address && <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--muted)", letterSpacing: "0.02em" }}>{address.slice(0, 6)}…{address.slice(-4)}</span>}
+            {isConnected && address && <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--muted)", letterSpacing: "0.02em" }}>{address.slice(0, 6) + "…" + address.slice(-4)}</span>}
             <WalletButton />
           </div>
         </div>
@@ -188,12 +199,18 @@ export default function Home() {
       {/* ── STATS ──────────────────────────────────────────────────── */}
       <section style={{ maxWidth: 1120, margin: "0 auto", padding: "32px 24px 0" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 1, background: "var(--border)", borderRadius: "var(--radius-md)", overflow: "hidden", boxShadow: "var(--elev-ring)" }}>
-          {[
-            { label: "Best yield", value: loading ? "…" : `${topApy?.apy?.toFixed(1) ?? "—"}%`, detail: topApy ? `${topApy.symbol} · ${topApy.project}` : "—" },
-            { label: "Best stablecoin", value: loading ? "…" : `${stableTop?.apy?.toFixed(1) ?? "—"}%`, detail: stableTop ? `${stableTop.symbol} · ${stableTop.project}` : "—" },
-            { label: "Protocols", value: loading ? "…" : `${protocols}`, detail: "Active on Base" },
-            { label: "Total TVL", value: loading ? "…" : tvl(totalTvl), detail: `${pools.length.toLocaleString()} pools` },
-          ].map(c => <div key={c.label} style={{ background: "var(--surface)", padding: "20px 24px" }}><Stat {...c} /></div>)}
+          <div style={{ background: "var(--surface)", padding: "20px 24px" }}>
+            <Stat label="Best yield" value={bestYieldValue} detail={bestYieldDetail} />
+          </div>
+          <div style={{ background: "var(--surface)", padding: "20px 24px" }}>
+            <Stat label="Best stablecoin" value={bestStableValue} detail={bestStableDetail} />
+          </div>
+          <div style={{ background: "var(--surface)", padding: "20px 24px" }}>
+            <Stat label="Protocols" value={protocolsValue} detail="Active on Base" />
+          </div>
+          <div style={{ background: "var(--surface)", padding: "20px 24px" }}>
+            <Stat label="Total TVL" value={totalTvlValue} detail={poolCountDetail} />
+          </div>
         </div>
       </section>
 
@@ -212,83 +229,103 @@ export default function Home() {
             />
           </div>
 
-          {/* category — styled */}
-          <select value={cat} onChange={e => setCat(e.target.value)} style={{ 
-            padding: "8px 32px 8px 12px", 
-            border: "1px solid var(--border)", 
-            borderRadius: "var(--radius-sm)", 
-            background: "var(--surface)", 
-            color: "var(--fg)", 
-            fontSize: 14, 
-            fontFamily: "var(--font-body)", 
-            cursor: "pointer",
-            appearance: "none",
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b6b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 10px center",
-            backgroundSize: "12px"
-          }}>
-            <option value="">All types</option>
-            <option value="lending">Lending</option>
-            <option value="yield">Yield vaults</option>
-            <option value="lp">Liquidity pools</option>
-          </select>
+          {/* category — styled to match theme */}
+          <div style={{ position: "relative" }}>
+            <select value={cat} onChange={e => setCat(e.target.value)} style={{ 
+              padding: "10px 36px 10px 14px", 
+              border: "1px solid var(--border)", 
+              borderRadius: "var(--radius-sm)", 
+              background: "var(--surface)", 
+              color: "var(--fg)", 
+              fontSize: 14, 
+              fontFamily: "var(--font-body)", 
+              cursor: "pointer",
+              appearance: "none",
+              minWidth: 140,
+              transition: "border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease)",
+              outline: "none"
+            }} onFocus={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(0,0,0,0.04)"; }} onBlur={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "none"; }}>
+              <option value="">All types</option>
+              <option value="lending">Lending</option>
+              <option value="yield">Yield vaults</option>
+              <option value="lp">Liquidity pools</option>
+            </select>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--meta)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </div>
 
-          {/* min tvl — styled */}
-          <select value={minTvl} onChange={e => setMinTvl(Number(e.target.value))} style={{ 
-            padding: "8px 32px 8px 12px", 
-            border: "1px solid var(--border)", 
-            borderRadius: "var(--radius-sm)", 
-            background: "var(--surface)", 
-            color: "var(--fg)", 
-            fontSize: 14, 
-            fontFamily: "var(--font-body)", 
-            cursor: "pointer",
-            appearance: "none",
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b6b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 10px center",
-            backgroundSize: "12px"
-          }}>
-            <option value={0}>Any TVL</option>
-            <option value={10}>$10K+</option>
-            <option value={50}>$50K+</option>
-            <option value={100}>$100K+</option>
-            <option value={500}>$500K+</option>
-            <option value={1000}>$1M+</option>
-          </select>
+          {/* min tvl — styled to match theme */}
+          <div style={{ position: "relative" }}>
+            <select value={minTvl} onChange={e => setMinTvl(Number(e.target.value))} style={{ 
+              padding: "10px 36px 10px 14px", 
+              border: "1px solid var(--border)", 
+              borderRadius: "var(--radius-sm)", 
+              background: "var(--surface)", 
+              color: "var(--fg)", 
+              fontSize: 14, 
+              fontFamily: "var(--font-body)", 
+              cursor: "pointer",
+              appearance: "none",
+              minWidth: 120,
+              transition: "border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease)",
+              outline: "none"
+            }} onFocus={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(0,0,0,0.04)"; }} onBlur={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "none"; }}>
+              <option value={0}>Any TVL</option>
+              <option value={10}>$10K+</option>
+              <option value={50}>$50K+</option>
+              <option value={100}>$100K+</option>
+              <option value={500}>$500K+</option>
+              <option value={1000}>$1M+</option>
+            </select>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--meta)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </div>
 
-          {/* SAFE MODE TOGGLE — styled */}
+          {/* SAFE MODE TOGGLE — styled to match theme */}
           <label style={{ 
             display: "flex", 
             alignItems: "center", 
             gap: 10, 
-            fontSize: 13, 
+            fontSize: 14, 
             color: "var(--fg)", 
             cursor: "pointer", 
             userSelect: "none",
-            padding: "8px 12px",
-            background: "var(--surface-raised)",
+            padding: "10px 16px",
+            background: "var(--surface)",
             borderRadius: "var(--radius-sm)",
             border: "1px solid var(--border)",
             transition: "all var(--motion-fast) var(--ease)"
-          }}>
+          }} onMouseEnter={e => (e.currentTarget.style.background = "var(--surface-raised)")} onMouseLeave={e => (e.currentTarget.style.background = "var(--surface)")}>
+            <div style={{ 
+              width: 18, 
+              height: 18, 
+              borderRadius: 4, 
+              border: "2px solid " + (!showRisky ? "var(--accent)" : "var(--border-strong)"),
+              background: !showRisky ? "var(--accent)" : "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all var(--motion-fast) var(--ease)"
+            }}>
+              {!showRisky && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+              )}
+            </div>
             <input 
               type="checkbox" 
               checked={!showRisky} 
               onChange={e => setShowRisky(!e.target.checked)} 
-              style={{ 
-                accentColor: "var(--accent)",
-                width: 16,
-                height: 16,
-                cursor: "pointer"
-              }} 
+              style={{ position: "absolute", opacity: 0, width: 0, height: 0 }} 
             />
-            <span>Safe mode</span>
+            <span style={{ fontWeight: 500 }}>Safe mode</span>
           </label>
 
           <span style={{ marginLeft: "auto", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--meta)", letterSpacing: "0.02em" }}>
-            {loading ? "Loading…" : `${filtered.length} of ${pools.length}`}
+            {loading ? "Loading..." : (filtered.length + " of " + pools.length)}
           </span>
         </div>
       </section>
@@ -307,21 +344,21 @@ export default function Home() {
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--border)" }}>
                     {["APY", "Asset", "Protocol", "Type", "TVL", "7d", ""].map((h, i) => (
-                      <th key={h || i} style={{ padding: "12px 16px", textAlign: i === 0 || i === 4 || i === 5 ? "right" : "left", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--meta)", whiteSpace: "nowrap" }}>{h}</th>
+                      <th key={h || String(i)} style={{ padding: "12px 16px", textAlign: i === 0 || i === 4 || i === 5 ? "right" : "left", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--meta)", whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.slice(0, 50).map((p, i) => (
-                    <tr key={`${p.project}-${p.symbol}-${i}`} style={{ borderBottom: "1px solid var(--border-soft)", transition: "background var(--motion-fast) var(--ease)" }}
+                    <tr key={p.project + "-" + p.symbol + "-" + i} style={{ borderBottom: "1px solid var(--border-soft)", transition: "background var(--motion-fast) var(--ease)" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--surface-raised)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                      <td style={{ padding: "14px 16px", textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 600, color: "var(--fg)", whiteSpace: "nowrap" }}>{p.apy.toFixed(2)}%</td>
-                      <td style={{ padding: "14px 16px", fontWeight: 500, fontSize: 14, color: "var(--fg)" }}>{p.symbol}{p.stablecoin && <span style={{ marginLeft: 8, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase" as const, background: "#e8f5e9", color: "#2e7d32", padding: "1px 6px", borderRadius: "var(--radius-pill)" }}>Stable</span>}</td>
+                      <td style={{ padding: "14px 16px", textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 600, color: "var(--fg)", whiteSpace: "nowrap" }}>{p.apy.toFixed(2) + "%"}</td>
+                      <td style={{ padding: "14px 16px", fontWeight: 500, fontSize: 14, color: "var(--fg)" }}>{[p.symbol, p.stablecoin && <span key="s" style={{ marginLeft: 8, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase" as const, background: "#e8f5e9", color: "#2e7d32", padding: "1px 6px", borderRadius: "var(--radius-pill)" }}>Stable</span>]}</td>
                       <td style={{ padding: "14px 16px", fontSize: 13, color: "var(--muted)" }}>{p.project}</td>
                       <td style={{ padding: "14px 16px" }}><Badge cat={p.category} /></td>
                       <td style={{ padding: "14px 16px", textAlign: "right", fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--muted)" }}>{tvl(p.tvlUsd)}</td>
                       <td style={{ padding: "14px 16px", textAlign: "right" }}><Trend value={p.apyPct7D} /></td>
-                      <td style={{ padding: "14px 16px", width: 60 }}>{p.ilRisk === "yes" && <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase" as const, background: "#fce4ec", color: "#c62828", padding: "1px 6px", borderRadius: "var(--radius-pill)" }}>IL</span>}</td>
+                      <td style={{ padding: "14px 16px", width: 60 }}>{p.ilRisk === "yes" ? <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase" as const, background: "#fce4ec", color: "#c62828", padding: "1px 6px", borderRadius: "var(--radius-pill)" }}>IL</span> : null}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -333,7 +370,7 @@ export default function Home() {
       </section>
 
       <footer style={{ borderTop: "1px solid var(--border)", padding: "20px 24px", textAlign: "center" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.04em", color: "var(--meta)" }}>Data from DefiLlama · Updated every 5 min · {pools.length.toLocaleString()} Base pools</p>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.04em", color: "var(--meta)" }}>{"Data from DefiLlama · Updated every 5 min · " + pools.length.toLocaleString() + " Base pools"}</p>
       </footer>
     </div>
   );
