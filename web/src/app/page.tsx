@@ -111,7 +111,7 @@ function Ticker({ pools }: { pools: Pool[] }) {
       background: "var(--surface-raised)", borderBottom: "1px solid var(--border)",
       fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", letterSpacing: "0.02em", height: 32, display: "flex", alignItems: "center",
     }}>
-      <div style={{ display: "flex", animation: "ticker 30s linear infinite" }}>
+      <div style={{ display: "flex", animation: "ticker 60s linear infinite" }}>
         {/* Seamless loop: 4 identical copies for continuous scroll */}
         <span style={{ paddingRight: 60 }}>{tickerContent}  •  </span>
         <span style={{ paddingRight: 60 }}>{tickerContent}  •  </span>
